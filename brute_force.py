@@ -59,31 +59,6 @@ def reverse_moves(moves):
     return res
 
 
-solving = False
-if solving:
-    base_moves = ["l", "-l", "r", "-r"]
-    step = 13
-    all_moves = generate_moves(base_moves, step)
-
-    print(len(all_moves))
-
-    selected_types = ['wreath_6/6', 'wreath_7/7']
-    subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
-    print(f'brute_force num: {len(subset)}')
-
-    index_in_subset = 0
-    for index, row in subset.iterrows():
-        print(index_in_subset, len(subset))
-        index_in_subset += 1
-
-        allowed_moves = literal_eval(puzzle_info.loc[row.puzzle_type, 'allowed_moves'])
-        allowed_moves = {k: Permutation(v) for k, v in allowed_moves.items()}
-
-        result = brute_force(row.id, row, all_moves, allowed_moves)
-        sample_submission.loc[row.id]['moves'] = result
-
-    sample_submission.to_csv('submission.csv')
-
 with open('wreath6-7-12.pkl', mode='rb') as f:
     wreath6712 = pickle.load(f)
 # print(wreath6712)
@@ -103,6 +78,24 @@ for index, row in subset.iterrows():
     result = reverse_moves(result)
     # print(initial_state, result)
     # result = brute_force(row.id, row, all_moves, allowed_moves)
+    sample_submission.loc[row.id]['moves'] = '.'.join(result)
+
+with open('cube-222.pkl', mode='rb') as f:
+    cube222 = pickle.load(f)
+print(cube222['DEDAEBABCACADCDFFFEEBFBC'])
+
+selected_types = ['cube_2/2/2']
+subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
+print(f'brute_force num: {len(subset)}')
+
+for index, row in subset.iterrows():
+    solution_state = ''.join(row.solution_state.split(';'))
+    if solution_state != 'AAAABBBBCCCCDDDDEEEEFFFF':
+        continue
+
+    initial_state = ''.join(row.initial_state.split(';'))
+    result = cube222[initial_state]
+    result = reverse_moves(result)
     sample_submission.loc[row.id]['moves'] = '.'.join(result)
 
 sample_submission.to_csv('submission.csv')
@@ -211,7 +204,7 @@ my_submission = pd.read_csv('submission.csv')
 sample_submission = pd.read_csv("sample_submission.csv", index_col='id')
 print(my_submission.head())
 
-selected_types = ['wreath_6/6', 'wreath_7/7', 'wreath_12/12']
+selected_types = ['cube_2/2/2', 'wreath_6/6', 'wreath_7/7', 'wreath_12/12']
 subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
 print(subset.head())
 for sub in subset.itertuples():
