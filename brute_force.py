@@ -84,24 +84,24 @@ if solving:
 
     sample_submission.to_csv('submission.csv')
 
-with open('wreath67.pkl', mode='rb') as f:
-    wreath67 = pickle.load(f)
-print(wreath67)
-print(wreath67['BAACCBBAAB'])
+with open('wreath6-7-12.pkl', mode='rb') as f:
+    wreath6712 = pickle.load(f)
+# print(wreath6712)
+print(wreath6712['BAACCBBAAB'])
 
-selected_types = ['wreath_6/6', 'wreath_7/7']
+selected_types = ['wreath_6/6', 'wreath_7/7', 'wreath_12/12']
 subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
 print(f'brute_force num: {len(subset)}')
 
-index_in_subset = 0
+# index_in_subset = 0
 for index, row in subset.iterrows():
-    print(index_in_subset, len(subset))
-    index_in_subset += 1
+    # print(index_in_subset, len(subset))
+    # index_in_subset += 1
 
     initial_state = ''.join(row.initial_state.split(';'))
-    result = wreath67[initial_state]
+    result = wreath6712[initial_state]
     result = reverse_moves(result)
-    print(initial_state, result)
+    # print(initial_state, result)
     # result = brute_force(row.id, row, all_moves, allowed_moves)
     sample_submission.loc[row.id]['moves'] = '.'.join(result)
 
@@ -207,17 +207,20 @@ if scoring:
 
     print(f'Leaderboard: {total_score}')
 
-# my_submission = pd.read_csv('submission.csv')
-# print(my_submission.head())
-#
-# selected_types = ['wreath_6/6', 'wreath_7/7']
-# subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
-# print(subset.head())
-# for sub in subset.itertuples():
-#     id = getattr(sub, 'id')
-#     moves = getattr(my_submission.loc[id], 'moves').split('.')
-#     sample_moves = getattr(sample_submission.loc[id], 'moves').split('.')
-#     print(id, len(moves), len(sample_moves))
+my_submission = pd.read_csv('submission.csv')
+sample_submission = pd.read_csv("sample_submission.csv", index_col='id')
+print(my_submission.head())
+
+selected_types = ['wreath_6/6', 'wreath_7/7', 'wreath_12/12']
+subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
+print(subset.head())
+for sub in subset.itertuples():
+    id = getattr(sub, 'id')
+    moves = getattr(my_submission.loc[id], 'moves').split('.')
+    sample_moves = getattr(sample_submission.loc[id], 'moves').split('.')
+    print(id, len(moves), len(sample_moves))
+
+print(puzzles.groupby('puzzle_type').count())
 
 # リースの状態数　実はそんなになかったりする？
 # 実験してみる
