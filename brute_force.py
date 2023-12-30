@@ -121,8 +121,7 @@ with open('cube-222b.pkl', mode='rb') as f:
 print(cube222['N22;N0;N1;N2;N12;N17;N20;N5;N4;N13;N3;N21;N16;N18;N7;N23;N15;N9;N11;N6;N19;N8;N14;N10'])
 
 for index, row in subset.iterrows():
-    solution_state = ''.join(row.solution_state.split(';'))
-    if solution_state != 'N0;N1;N2;N3;N4;N5;N6;N7;N8;N9;N10;N11;N12;N13;N14;N15;N16;N17;N18;N19;N20;N21;N22;N23':
+    if row.solution_state != 'N0;N1;N2;N3;N4;N5;N6;N7;N8;N9;N10;N11;N12;N13;N14;N15;N16;N17;N18;N19;N20;N21;N22;N23':
         continue
 
     result = cube222[row.initial_state]
