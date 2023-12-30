@@ -18,3 +18,6 @@ Schreier–Sims algorithm
 パズル状態を順列で定義し、 あり得る状態を集めた群を考える  
 操作は群の１要素から１要素へのmappingとなる  
 群関係のアルゴリズムを適用できる？
+
+がんばってこの辺を読む
+https://github.com/dwalton76/rubiks-cube-NxNxN-solver/blob/master/rubikscubennnsolver/RubiksCubeNNNEven.py

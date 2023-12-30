@@ -9,7 +9,7 @@ def li():
     return list(map(int, readline().split()))
 
 my_submission = pd.read_csv('submission.csv')
-sample_submission = pd.read_csv("sample_submission.csv", index_col='id')
+sample_submission = pd.read_csv("submission_public.csv", index_col='id')
 print(my_submission.head())
 
 for sub in my_submission.itertuples():
