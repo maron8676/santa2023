@@ -100,21 +100,44 @@ for index, row in subset.iterrows():
     # result = brute_force(row.id, row, all_moves, allowed_moves)
     sample_submission.loc[row.id]['moves'] = '.'.join(result)
 
-with open('cube-222.pkl', mode='rb') as f:
-    cube222 = pickle.load(f)
-print(cube222['DEDAEBABCACADCDFFFEEBFBC'])
-
 selected_types = ['cube_2/2/2']
 subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
 print(f'brute_force num: {len(subset)}')
 
+with open('cube-222.pkl', mode='rb') as f:
+    cube222 = pickle.load(f)
+print(cube222['D;E;D;A;E;B;A;B;C;A;C;A;D;C;D;F;F;F;E;E;B;F;B;C'])
+
 for index, row in subset.iterrows():
-    solution_state = ''.join(row.solution_state.split(';'))
-    if solution_state != 'AAAABBBBCCCCDDDDEEEEFFFF':
+    if row.solution_state != 'A;A;A;A;B;B;B;B;C;C;C;C;D;D;D;D;E;E;E;E;F;F;F;F':
         continue
 
-    initial_state = ''.join(row.initial_state.split(';'))
-    result = cube222[initial_state]
+    result = cube222[row.initial_state]
+    result = reverse_moves(result)
+    sample_submission.loc[row.id]['moves'] = '.'.join(result)
+
+with open('cube-222b.pkl', mode='rb') as f:
+    cube222 = pickle.load(f)
+print(cube222['N22;N0;N1;N2;N12;N17;N20;N5;N4;N13;N3;N21;N16;N18;N7;N23;N15;N9;N11;N6;N19;N8;N14;N10'])
+
+for index, row in subset.iterrows():
+    solution_state = ''.join(row.solution_state.split(';'))
+    if solution_state != 'N0;N1;N2;N3;N4;N5;N6;N7;N8;N9;N10;N11;N12;N13;N14;N15;N16;N17;N18;N19;N20;N21;N22;N23':
+        continue
+
+    result = cube222[row.initial_state]
+    result = reverse_moves(result)
+    sample_submission.loc[row.id]['moves'] = '.'.join(result)
+
+with open('cube-222c.pkl', mode='rb') as f:
+    cube222 = pickle.load(f)
+print(cube222['C;F;B;D;F;A;E;D;D;E;D;C;E;A;B;F;C;A;F;E;A;B;B;C'])
+
+for index, row in subset.iterrows():
+    if row.solution_state != 'A;B;A;B;B;C;B;C;C;D;C;D;D;E;D;E;E;F;E;F;F;A;F;A':
+        continue
+
+    result = cube222[row.initial_state]
     result = reverse_moves(result)
     sample_submission.loc[row.id]['moves'] = '.'.join(result)
 
