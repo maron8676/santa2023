@@ -68,14 +68,34 @@ selected_types = ['wreath_6/6', 'wreath_7/7', 'wreath_12/12']
 subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
 print(f'brute_force num: {len(subset)}')
 
+wreath_items = ['A', 'B', 'C']
 # index_in_subset = 0
 for index, row in subset.iterrows():
     # print(index_in_subset, len(subset))
     # index_in_subset += 1
 
-    initial_state = ''.join(row.initial_state.split(';'))
-    result = wreath6712[initial_state]
-    result = reverse_moves(result)
+    best_ans = []
+    initial_state_list = row.initial_state.split(';')
+
+    if row.num_wildcards == 2:
+        for i in range(len(initial_state_list)):
+            for r1 in wreath_items:
+                temp1 = initial_state_list[i]
+                initial_state_list[i] = r1
+                for j in range(i + 1, len(initial_state_list)):
+                    for r2 in wreath_items:
+                        temp2 = initial_state_list[j]
+                        initial_state_list[j] = r2
+                        initial_state = ''.join(initial_state_list)
+                        if initial_state in wreath6712:
+                            ans = wreath6712[initial_state]
+                            if len(best_ans) == 0 or len(ans) < len(best_ans):
+                                best_ans = ans
+                        initial_state_list[j] = temp2
+                initial_state_list[i] = temp1
+    else:
+        best_ans = wreath6712[''.join(initial_state_list)]
+    result = reverse_moves(best_ans)
     # print(initial_state, result)
     # result = brute_force(row.id, row, all_moves, allowed_moves)
     sample_submission.loc[row.id]['moves'] = '.'.join(result)
