@@ -124,6 +124,8 @@ for key in key_list:
 
 with open('cube-333-6-af.pkl', mode='rb') as f:
     solve6 = pickle.load(f)
+with open('cube-333-6-dis-af.pkl', mode='rb') as f:
+    dis_solved = pickle.load(f)
 
 for index, row in subset.iterrows():
     moves = sample_submission.loc[index]['moves'].split('.')
@@ -146,17 +148,30 @@ for index, row in subset.iterrows():
     new_moves = []
     new_moves.extend(moves[:last_state_index])
     new_moves.extend(reverse_moves(last_moves))
-    print(len(moves), len(new_moves))
 
     state = row.initial_state.split(';')
-    for move in new_moves:
+    stop_index = len(new_moves) - 1
+    for index, move in enumerate(new_moves):
         state = allowed_moves[move](state)
+        if ';'.join(state) in dis_solved[2] and (
+                row.num_wildcards == '2' or row.num_wildcards == '4' or row.num_wildcards == '6'):
+            stop_index = index
+            break
+        if ';'.join(state) in dis_solved[4] and (row.num_wildcards == '4' or row.num_wildcards == '6'):
+            stop_index = index
+            break
+        if ';'.join(state) in dis_solved[6] and (row.num_wildcards == '6'):
+            stop_index = index
+            break
     print(state)
+    print(len(moves), len(new_moves), stop_index + 1)
     print()
-    sample_submission.loc[row.id]['moves'] = '.'.join(new_moves)
+    sample_submission.loc[row.id]['moves'] = '.'.join(new_moves[:stop_index + 1])
 
 with open('cube-333-6-full.pkl', mode='rb') as f:
     solve6 = pickle.load(f)
+with open('cube-333-6-dis-full.pkl', mode='rb') as f:
+    dis_solved = pickle.load(f)
 for index, row in subset.iterrows():
     moves = sample_submission.loc[index]['moves'].split('.')
     rev_moves = reverse_moves(moves)
@@ -181,14 +196,28 @@ for index, row in subset.iterrows():
     print(len(moves), len(new_moves))
 
     state = row.initial_state.split(';')
-    for move in new_moves:
+    stop_index = len(new_moves) - 1
+    for index, move in enumerate(new_moves):
         state = allowed_moves[move](state)
+        if ';'.join(state) in dis_solved[2] and (
+                row.num_wildcards == '2' or row.num_wildcards == '4' or row.num_wildcards == '6'):
+            stop_index = index
+            break
+        if ';'.join(state) in dis_solved[4] and (row.num_wildcards == '4' or row.num_wildcards == '6'):
+            stop_index = index
+            break
+        if ';'.join(state) in dis_solved[6] and (row.num_wildcards == '6'):
+            stop_index = index
+            break
     print(state)
+    print(len(moves), len(new_moves), stop_index + 1)
     print()
-    sample_submission.loc[row.id]['moves'] = '.'.join(new_moves)
+    sample_submission.loc[row.id]['moves'] = '.'.join(new_moves[:stop_index + 1])
 
 with open('cube-333-6-another.pkl', mode='rb') as f:
     solve6 = pickle.load(f)
+with open('cube-333-6-dis-another.pkl', mode='rb') as f:
+    dis_solved = pickle.load(f)
 for index, row in subset.iterrows():
     moves = sample_submission.loc[index]['moves'].split('.')
     rev_moves = reverse_moves(moves)
@@ -213,11 +242,23 @@ for index, row in subset.iterrows():
     print(len(moves), len(new_moves))
 
     state = row.initial_state.split(';')
-    for move in new_moves:
+    stop_index = len(new_moves) - 1
+    for index, move in enumerate(new_moves):
         state = allowed_moves[move](state)
+        if ';'.join(state) in dis_solved[2] and (
+                row.num_wildcards == '2' or row.num_wildcards == '4' or row.num_wildcards == '6'):
+            stop_index = index
+            break
+        if ';'.join(state) in dis_solved[4] and (row.num_wildcards == '4' or row.num_wildcards == '6'):
+            stop_index = index
+            break
+        if ';'.join(state) in dis_solved[6] and (row.num_wildcards == '6'):
+            stop_index = index
+            break
     print(state)
+    print(len(moves), len(new_moves), stop_index + 1)
     print()
-    sample_submission.loc[row.id]['moves'] = '.'.join(new_moves)
+    sample_submission.loc[row.id]['moves'] = '.'.join(new_moves[:stop_index + 1])
 
 sample_submission.to_csv('submission.csv')
 
