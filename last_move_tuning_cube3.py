@@ -111,7 +111,7 @@ def score_puzzle(puzzle_id, puzzle, sub_solution):
 
 puzzle_info = pd.read_csv("puzzle_info.csv", index_col='puzzle_type')
 puzzles = pd.read_csv("puzzles.csv")
-sample_submission = pd.read_csv("submission_public.csv", index_col='id')
+sample_submission = pd.read_csv("submission2.csv", index_col='id')
 
 selected_types = ['cube_3/3/3']
 subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
@@ -130,6 +130,70 @@ for index, row in subset.iterrows():
     rev_moves = reverse_moves(moves)
     print(index)
     if row.solution_state != 'A;A;A;A;A;A;A;A;A;B;B;B;B;B;B;B;B;B;C;C;C;C;C;C;C;C;C;D;D;D;D;D;D;D;D;D;E;E;E;E;E;E;E;E;E;F;F;F;F;F;F;F;F;F':
+        print("skip")
+        continue
+
+    last_state_index = -1
+    last_state = None
+    last_moves = None
+    state = row.solution_state.split(';')
+    for index, move in enumerate(rev_moves):
+        state = allowed_moves[move](state)
+        if ';'.join(state) in solve6:
+            last_state_index = len(moves) - 1 - index
+            last_state = state
+            last_moves = solve6[';'.join(state)]
+    new_moves = []
+    new_moves.extend(moves[:last_state_index])
+    new_moves.extend(reverse_moves(last_moves))
+    print(len(moves), len(new_moves))
+
+    state = row.initial_state.split(';')
+    for move in new_moves:
+        state = allowed_moves[move](state)
+    print(state)
+    print()
+    sample_submission.loc[row.id]['moves'] = '.'.join(new_moves)
+
+with open('cube-333-6-full.pkl', mode='rb') as f:
+    solve6 = pickle.load(f)
+for index, row in subset.iterrows():
+    moves = sample_submission.loc[index]['moves'].split('.')
+    rev_moves = reverse_moves(moves)
+    print(index)
+    if row.solution_state != 'N0;N1;N2;N3;N4;N5;N6;N7;N8;N9;N10;N11;N12;N13;N14;N15;N16;N17;N18;N19;N20;N21;N22;N23;N24;N25;N26;N27;N28;N29;N30;N31;N32;N33;N34;N35;N36;N37;N38;N39;N40;N41;N42;N43;N44;N45;N46;N47;N48;N49;N50;N51;N52;N53':
+        print("skip")
+        continue
+
+    last_state_index = -1
+    last_state = None
+    last_moves = None
+    state = row.solution_state.split(';')
+    for index, move in enumerate(rev_moves):
+        state = allowed_moves[move](state)
+        if ';'.join(state) in solve6:
+            last_state_index = len(moves) - 1 - index
+            last_state = state
+            last_moves = solve6[';'.join(state)]
+    new_moves = []
+    new_moves.extend(moves[:last_state_index])
+    new_moves.extend(reverse_moves(last_moves))
+    print(len(moves), len(new_moves))
+
+    state = row.initial_state.split(';')
+    for move in new_moves:
+        state = allowed_moves[move](state)
+    print(state)
+    print()
+    sample_submission.loc[row.id]['moves'] = '.'.join(new_moves)
+
+with open('cube-333-6-another.pkl', mode='rb') as f:
+    solve6 = pickle.load(f)
+for index, row in subset.iterrows():
+    moves = sample_submission.loc[index]['moves'].split('.')
+    rev_moves = reverse_moves(moves)
+    print(index)
+    if row.solution_state != 'A;B;A;B;A;B;A;B;A;B;C;B;C;B;C;B;C;B;C;D;C;D;C;D;C;D;C;D;E;D;E;D;E;D;E;D;E;F;E;F;E;F;E;F;E;F;A;F;A;F;A;F;A;F':
         print("skip")
         continue
 

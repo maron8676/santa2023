@@ -31,7 +31,8 @@ for key in key_list:
     allowed_moves["-" + key] = allowed_moves[key] ** (-1)
 
 # initial_state = 'N0;N1;N2;N3;N4;N5;N6;N7;N8;N9;N10;N11;N12;N13;N14;N15;N16;N17;N18;N19;N20;N21;N22;N23;N24;N25;N26;N27;N28;N29;N30;N31;N32;N33;N34;N35;N36;N37;N38;N39;N40;N41;N42;N43;N44;N45;N46;N47;N48;N49;N50;N51;N52;N53'
-initial_state = 'A;A;A;A;A;A;A;A;A;B;B;B;B;B;B;B;B;B;C;C;C;C;C;C;C;C;C;D;D;D;D;D;D;D;D;D;E;E;E;E;E;E;E;E;E;F;F;F;F;F;F;F;F;F'
+# initial_state = 'A;A;A;A;A;A;A;A;A;B;B;B;B;B;B;B;B;B;C;C;C;C;C;C;C;C;C;D;D;D;D;D;D;D;D;D;E;E;E;E;E;E;E;E;E;F;F;F;F;F;F;F;F;F'
+initial_state = 'A;B;A;B;A;B;A;B;A;B;C;B;C;B;C;B;C;B;C;D;C;D;C;D;C;D;C;D;E;D;E;D;E;D;E;D;E;F;E;F;E;F;E;F;E;F;A;F;A;F;A;F;A;F'
 solve_dict = {initial_state: []}
 
 queue = deque([(initial_state.split(';'), [])])
@@ -59,5 +60,5 @@ while len(queue) > 0:
 
 print(len(solve_dict))
 
-with open('cube-333-6-af.pkl', mode='wb') as f:
+with open('cube-333-6-another.pkl', mode='wb') as f:
     pickle.dump(solve_dict, f)
