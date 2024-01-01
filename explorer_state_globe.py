@@ -16,42 +16,40 @@ def li():
 
 
 puzzle_info = pd.read_csv("puzzle_info.csv", index_col='puzzle_type')
+base_moves = ["r0", "-r0", "r1", "-r1", "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12",
+              "f13", "f14", "f15"]
 
-base_moves = ["f0", "-f0", "f1", "-f1", "r0", "-r0", "r1", "-r1", "d0", "-d0", "d1", "-d1"]
+globe_1_8type = 'globe_1/8'
+selected_types = [globe_1_8type]
 
-# cube_2/2/2の状態数
-allowed_moves = literal_eval(puzzle_info.loc['cube_2/2/2', 'allowed_moves'])
+# globe_1/8の状態数
+allowed_moves = literal_eval(puzzle_info.loc[globe_1_8type, 'allowed_moves'])
 allowed_moves = {k: Permutation(v) for k, v in allowed_moves.items()}
 key_list = list(allowed_moves.keys())
 for key in key_list:
-    allowed_moves["-" + key] = allowed_moves[key] ** (-1)
+    if key[0] == "r":
+        allowed_moves["-" + key] = allowed_moves[key] ** (-1)
 
-# initial_state = 'AAAABBBBCCCCDDDDEEEEFFFF'
-# initial_state = 'ABCDEFGHIJKLMNOPQRSTUVWX'
-initial_state = 'ABABBCBCCDCDDEDEEFEFFAFA'
+initial_state = 'A;A;C;C;E;E;G;G;I;I;K;K;M;M;O;O;B;B;D;D;F;F;H;H;J;J;L;L;N;N;P;P'
 solve_dict = {initial_state: []}
 
-queue = deque([(initial_state, [])])
+queue = deque([(initial_state.split(';'), [])])
 
 before_time = time.time()
 while len(queue) > 0:
     state = queue.popleft()
     for m in base_moves:
-        # power = 1
-        # if m[0] == "-":
-        #     m = m[1:]
-        #     power = -1
         p = allowed_moves[m]
 
-        new_state = ''.join(p(state[0]))
-        if new_state not in solve_dict:
+        new_state = p(state[0])
+        new_state_str = ';'.join(new_state)
+        if new_state_str not in solve_dict:
             operation = []
             operation.extend(state[1])
-            # if power == -1:
-            #     m = "-" + m
             operation.append(m)
-            queue.append((new_state, operation))
-            solve_dict[new_state] = operation
+            if len(operation) < 6:
+                queue.append((new_state, operation))
+            solve_dict[new_state_str] = operation
 
     now = time.time()
     if now - before_time > 1:
@@ -60,5 +58,5 @@ while len(queue) > 0:
 
 print(len(solve_dict))
 
-with open('cube-222c.pkl', mode='wb') as f:
+with open('globe-1-8-6.pkl', mode='wb') as f:
     pickle.dump(solve_dict, f)

@@ -191,6 +191,16 @@ files = [
 mpmath = ">=0.19"
 
 [[package]]
+name = "timeout-decorator"
+version = "0.5.0"
+description = "Timeout decorator"
+optional = false
+python-versions = "*"
+files = [
+    {file = "timeout-decorator-0.5.0.tar.gz", hash = "sha256:6a2f2f58db1c5b24a2cc79de6345760377ad8bdc13813f5265f6c3e63d16b3d7"},
+]
+
+[[package]]
 name = "tqdm"
 version = "4.66.1"
 description = "Fast, Extensible Progress Meter"
@@ -224,4 +234,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "e717cf612ee6b5ed695972c510616332e6959b32ab8f6b29a3b1ca7bb3518432"
+content-hash = "349ec9b432dc64f9d054d2719e6e406ae881c445c231b3447c364ee784f9e688"
