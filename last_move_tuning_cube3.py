@@ -1,7 +1,7 @@
 import pickle
 from ast import literal_eval
+from collections import deque
 from dataclasses import dataclass
-from itertools import chain, product
 from typing import Dict, List
 
 import pandas as pd
@@ -109,6 +109,38 @@ def score_puzzle(puzzle_id, puzzle, sub_solution):
     return len(moves)
 
 
+def solve_center(state_in, solution_state):
+    # 中央を全探索
+    initial_state = state_in
+    solve_dict = {';'.join(initial_state): []}
+
+    queue = deque([(initial_state, [])])
+    center_state = state_in
+    center_ans = []
+    while len(queue) > 0:
+        state = queue.popleft()
+        center = sum([state[0][i] == solution_state[i] for i in range(4, 54, 9)])
+        if center == 6:
+            # print("state", state)
+            center_state = state[0]
+            center_ans = state[1]
+            break
+
+        for m in center_moves:
+            p = allowed_moves[m]
+            new_state = p(state[0])
+            new_state_str = ''.join(new_state)
+            if new_state_str not in solve_dict:
+                operation = []
+                operation.extend(state[1])
+                operation.append(m)
+                if len(operation) < 8:
+                    queue.append((new_state, operation))
+                solve_dict[new_state_str] = operation
+    # print(center_state, center_state)
+    return center_state, center_ans
+
+
 puzzle_info = pd.read_csv("puzzle_info.csv", index_col='puzzle_type')
 puzzles = pd.read_csv("puzzles.csv")
 sample_submission = pd.read_csv("submission2.csv", index_col='id')
@@ -116,16 +148,24 @@ sample_submission = pd.read_csv("submission2.csv", index_col='id')
 selected_types = ['cube_3/3/3']
 subset = puzzles[puzzles['puzzle_type'].isin(selected_types)]
 
+base_moves = ["f0", "-f0", "f2", "-f2", "r0", "-r0", "r2", "-r2", "d0", "-d0", "d2", "-d2"]
+center_moves = ["f1", "-f1", "r1", "-r1", "d1", "-d1"]
 allowed_moves = literal_eval(puzzle_info.loc['cube_3/3/3', 'allowed_moves'])
 allowed_moves = {k: Permutation(v) for k, v in allowed_moves.items()}
 key_list = list(allowed_moves.keys())
 for key in key_list:
     allowed_moves["-" + key] = allowed_moves[key] ** (-1)
 
+print("load6")
 with open('cube-333-6-af.pkl', mode='rb') as f:
     solve6 = pickle.load(f)
 with open('cube-333-6-dis-af.pkl', mode='rb') as f:
     dis_solved = pickle.load(f)
+print("load8")
+with open('cube-333-8-af_nocenter.pkl', mode='rb') as f:
+    solve8 = pickle.load(f)
+with open('cube-333-8-dis-af_nocenter.pkl', mode='rb') as f:
+    dis_solved8 = pickle.load(f)
 
 for index, row in subset.iterrows():
     moves = sample_submission.loc[index]['moves'].split('.')
@@ -136,18 +176,36 @@ for index, row in subset.iterrows():
         continue
 
     last_state_index = -1
-    last_state = None
     last_moves = None
+    best_center_length = len(moves)
+    last_center_state_index = -1
+    last_center_state = None
+    last_center_moves = None
+    solution_state = row.solution_state.split(';')
     state = row.solution_state.split(';')
     for index, move in enumerate(rev_moves):
         state = allowed_moves[move](state)
         if ';'.join(state) in solve6:
             last_state_index = len(moves) - 1 - index
-            last_state = state
             last_moves = solve6[';'.join(state)]
+
+        center_state, center_moves = solve_center(state, solution_state)
+        if ';'.join(center_state) in solve8:
+            center_length = len(moves) - 1 - index + len(center_moves) + len(solve8[';'.join(state)])
+            if best_center_length > center_length:
+                best_center_length = center_length
+                last_center_state_index = len(moves) - 1 - index
+                last_center_state = center_state
+                last_center_moves = center_moves
+
     new_moves = []
-    new_moves.extend(moves[:last_state_index])
-    new_moves.extend(reverse_moves(last_moves))
+    if last_state_index + len(last_moves) <= best_center_length:
+        new_moves.extend(moves[:last_state_index])
+        new_moves.extend(reverse_moves(last_moves))
+    else:
+        new_moves.extend(moves[:last_center_state_index])
+        new_moves.extend(reverse_moves(last_center_moves))
+        new_moves.extend(reverse_moves(solve8[';'.join(last_center_state)]))
 
     state = row.initial_state.split(';')
     stop_index = len(new_moves) - 1
@@ -161,6 +219,16 @@ for index, row in subset.iterrows():
             stop_index = index
             break
         if ';'.join(state) in dis_solved[6] and (row.num_wildcards == '6'):
+            stop_index = index
+            break
+        if ';'.join(state) in dis_solved8[2] and (
+                row.num_wildcards == '2' or row.num_wildcards == '4' or row.num_wildcards == '6'):
+            stop_index = index
+            break
+        if ';'.join(state) in dis_solved8[4] and (row.num_wildcards == '4' or row.num_wildcards == '6'):
+            stop_index = index
+            break
+        if ';'.join(state) in dis_solved8[6] and (row.num_wildcards == '6'):
             stop_index = index
             break
     print(state)
@@ -181,14 +249,12 @@ for index, row in subset.iterrows():
         continue
 
     last_state_index = -1
-    last_state = None
     last_moves = None
     state = row.solution_state.split(';')
     for index, move in enumerate(rev_moves):
         state = allowed_moves[move](state)
         if ';'.join(state) in solve6:
             last_state_index = len(moves) - 1 - index
-            last_state = state
             last_moves = solve6[';'.join(state)]
     new_moves = []
     new_moves.extend(moves[:last_state_index])
@@ -227,14 +293,12 @@ for index, row in subset.iterrows():
         continue
 
     last_state_index = -1
-    last_state = None
     last_moves = None
     state = row.solution_state.split(';')
     for index, move in enumerate(rev_moves):
         state = allowed_moves[move](state)
         if ';'.join(state) in solve6:
             last_state_index = len(moves) - 1 - index
-            last_state = state
             last_moves = solve6[';'.join(state)]
     new_moves = []
     new_moves.extend(moves[:last_state_index])
