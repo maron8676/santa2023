@@ -22,22 +22,18 @@ Schreier–Sims algorithm
 がんばってこの辺を読む?
 https://github.com/dwalton76/rubiks-cube-NxNxN-solver/blob/master/rubikscubennnsolver/RubiksCubeNNNEven.py
 
-3x3x3 中央揃えたら後は0と2だけでよい
-　探索空間減らせる
+3x3x3 中央揃えたら後は0と2だけでよい 探索空間減らせる
 
 publicになっているもの
-https://www.kaggle.com/code/yunsuxiaozi/summary-of-mainstream-algorithms-santa-2023
-　汎用cubesolver
-　wreath 5,7,12の最適解
-　wildcardのために早期修了できないかチェック
-　同じ状態を２回通っていないかチェック
-　適当に操作列を取って、より短い長さで置き換えられないかチェック
+https://www.kaggle.com/code/yunsuxiaozi/summary-of-mainstream-algorithms-santa-2023汎用cubesolver wreath 5,7,12の最適解
+wildcardのために早期修了できないかチェック 同じ状態を２回通っていないかチェック 適当に操作列を取って、より短い長さで置き換えられないかチェック
 
 n 解の長さ
 ２状態間のshortest_pathを記録する
 基本100
 
 globeは以下の２ステップに分けてよいか？
+
 1. 隣を同じ文字にする
 2. 順番を適切に入れ替える
 
@@ -45,10 +41,10 @@ globeは以下の２ステップに分けてよいか？
 
 globe考察
 https://www.jaapsch.net/puzzles/master.htm
+
 1. とりあえず１つずつ揃えれば右下は揃う
 2. そのまま右上も揃う
 3. 後どうするか
 
 1. 同じものが隣になるようにする
-2. 上下を合わせる
-3. 内部の入れ替え
+2. 内部の入れ替え
