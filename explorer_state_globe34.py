@@ -31,8 +31,14 @@ def count_correct(state, correct):
 
 
 puzzle_info = pd.read_csv("puzzle_info.csv", index_col='puzzle_type')
-base_moves = ["f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",
-              "f2.-r0.f2.r0.-r3.f2.r3.f2"]
+base_moves = []
+for i in range(8):
+    base_moves.append(f"f{i}.-r0.-r1.f{i}.r0.r1.-r2.-r3.f{i}.r2.r3.f{i}")
+    base_moves.append(f"f{i}.-r0.f{i}.r0.-r3.f{i}.r3.f{i}")
+    base_moves.append(f"f{i}.-r1.f{i}.r1.-r2.f{i}.r2.f{i}")
+    base_moves.append(f"-r0.-r1.f{i}.r0.r1.-r2.-r3.f{i}.r2.r3")
+    base_moves.append(f"-r0.f{i}.r0.-r3.f{i}.r3")
+    base_moves.append(f"-r1.f{i}.r1.-r2.f{i}.r2")
 
 globe_3_4type = 'globe_3/4'
 selected_types = [globe_3_4type]
@@ -44,11 +50,17 @@ key_list = list(allowed_moves.keys())
 for key in key_list:
     if key[0] == "r":
         allowed_moves["-" + key] = allowed_moves[key] ** (-1)
+for moves in base_moves:
+    move_list = moves.split('.')
+    pos = list(range(32))
+    for move in move_list:
+        pos = allowed_moves[move](pos)
+    allowed_moves[moves] = Permutation(pos)
 
-initial_state = 'A;A;C;C;E;E;G;G;A;A;C;C;E;E;G;G;B;B;D;D;F;F;H;H;B;B;D;D;F;F;H;H'.split(';')
+initial_state = list(range(32))
 
 # solve_dict = {';'.join(list(map(str, initial_state))): []}
-solve_dict = {';'.join(initial_state): []}
+solve_dict = {';'.join(list(map(str, initial_state))): []}
 solve_dict_rev = dict()
 
 queue = deque([(initial_state, [])])
@@ -60,12 +72,12 @@ while len(queue) > 0:
         p = allowed_moves[m]
 
         new_state = p(state[0])
-        new_state_str = ';'.join(new_state)
+        new_state_str = ';'.join(list(map(str, new_state)))
         if new_state_str not in solve_dict:
             operation = []
             operation.extend(state[1])
             operation.append(m)
-            if len(operation) < 7:
+            if len(operation) < 6:
                 queue.append((new_state, operation))
             solve_dict[new_state_str] = operation
             solve_dict_rev['.'.join(operation)] = new_state
