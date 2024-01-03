@@ -48,3 +48,7 @@ https://www.jaapsch.net/puzzles/master.htm
 
 1. 同じものが隣になるようにする
 2. 内部の入れ替え
+
+
+https://www.universiteitleiden.nl/binaries/content/assets/science/mi/scripties/bachbrouwer.pdf
+
