@@ -69,6 +69,7 @@ allowed_moves['r0.r0.r1.r1'] = Permutation(
 # initial_state = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
 #                  28, 29, 30, 31]
 initial_state = 'A;A;C;C;E;E;G;G;I;I;K;K;M;M;O;O;B;B;D;D;F;F;H;H;J;J;L;L;N;N;P;P'.split(';')
+target_state = 'A;A;D;C;E;E;G;G;I;I;K;K;M;M;O;O;B;B;C;D;F;F;H;H;J;J;L;L;N;N;P;P'
 
 # solve_dict = {';'.join(list(map(str, initial_state))): []}
 solve_dict = {';'.join(initial_state): []}
@@ -85,8 +86,14 @@ while len(queue) > 0:
         new_state = p(state[0])
         new_state_list = [new_state]
         for i in range(15):
-            new_state_list.append(allowed_moves['r0.r1'](new_state_list[-1]))
+            rotate_state = new_state_list[-1]
+            new_state_list.append(allowed_moves['r0.r1'](rotate_state))
         new_state_str_list = list(map(lambda x: ';'.join(x), new_state_list))
+
+        if target_state in new_state_str_list:
+            print('found')
+            print(state)
+
         if not any([new_state_str in solve_dict for new_state_str in new_state_str_list]):
             operation = []
             operation.extend(state[1])
@@ -103,7 +110,7 @@ while len(queue) > 0:
 
 print(len(solve_dict))
 
-with open('globe-1-8-af_rotate.pkl', mode='wb') as f:
-    pickle.dump(solve_dict, f)
-with open('globe-1-8-af_rotate_rev.pkl', mode='wb') as f:
-    pickle.dump(solve_dict_rev, f)
+# with open('globe-1-8-af_rotate.pkl', mode='wb') as f:
+#     pickle.dump(solve_dict, f)
+# with open('globe-1-8-af_rotate_rev.pkl', mode='wb') as f:
+#     pickle.dump(solve_dict_rev, f)
