@@ -109,11 +109,12 @@ wreath_cross_dict = {
 
 
 class Puzzle:
-    def __init__(self, initial_state, solution_state, allowed_moves):
+    def __init__(self, initial_state, solution_state, allowed_moves, num_wildcards):
         self.initial_state = initial_state
         self.state = initial_state
         self.solution_state = solution_state
         self.allowed_moves = allowed_moves
+        self.num_wildcards = num_wildcards
 
         self.move_list = []
         self.history_queue = deque([(self.state, self.move_list)])
@@ -121,7 +122,11 @@ class Puzzle:
         self.history_limit = 100
 
     def is_solved(self):
-        return self.state == self.solution_state
+        diff = 0
+        for i in range(len(self.state)):
+            if self.state[i] != self.solution_state[i]:
+                diff += 1
+        return diff <= self.num_wildcards
 
     def move(self, move_key):
         raise NotImplementedError
@@ -186,8 +191,8 @@ class Puzzle:
 
 
 class Wreath(Puzzle):
-    def __init__(self, left, right, initial_state, solution_state, allowed_moves):
-        super().__init__(initial_state, solution_state, allowed_moves)
+    def __init__(self, left, right, initial_state, solution_state, allowed_moves, num_wildcards):
+        super().__init__(initial_state, solution_state, allowed_moves, num_wildcards)
         self.left = left
         self.right = right
         # self.sugar_dict = self.create_sugar_list()
@@ -213,8 +218,8 @@ class Wreath(Puzzle):
 
 
 class Globe(Puzzle):
-    def __init__(self, row, column, initial_state, solution_state, allowed_moves):
-        super().__init__(initial_state, solution_state, allowed_moves)
+    def __init__(self, row, column, initial_state, solution_state, allowed_moves, num_wildcards):
+        super().__init__(initial_state, solution_state, allowed_moves, num_wildcards)
         self.row = row
         self.column = column
         self.sugar_dict = self.create_sugar_list()
@@ -259,6 +264,7 @@ if __name__ == "__main__":
     puzzle_type = puzzle["puzzle_type"]
     initial_state = puzzle["initial_state"].split(";")
     solution_state = puzzle["solution_state"].split(";")
+    num_wildcards = puzzle["num_wildcards"]
     puzzle_state = None
     allowed_moves = literal_eval(puzzle_info.loc[puzzle_type, 'allowed_moves'])
     allowed_moves = {k: Permutation(v) for k, v in allowed_moves.items()}
@@ -268,10 +274,10 @@ if __name__ == "__main__":
 
     if puzzle_type.startswith(wreath_prefix):
         left, right = puzzle_type[len(wreath_prefix):].split("/")
-        puzzle_state = Wreath(int(left), int(right), initial_state, solution_state, allowed_moves)
+        puzzle_state = Wreath(int(left), int(right), initial_state, solution_state, allowed_moves, num_wildcards)
     if puzzle_type.startswith(globe_prefix):
         row, column = puzzle_type[len(globe_prefix):].split("/")
-        puzzle_state = Globe(int(row), int(column), initial_state, solution_state, allowed_moves)
+        puzzle_state = Globe(int(row), int(column), initial_state, solution_state, allowed_moves, num_wildcards)
 
     while puzzle_state is not None and not puzzle_state.is_solved():
         puzzle_state.print()
