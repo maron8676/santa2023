@@ -161,23 +161,35 @@ class Globe(Puzzle):
         #   1.1. 反対側に置いてあるものを探す
         #   1.2. 移動幅は1, 3, 5, ..., n - 1　これを偶数個組み合わせる
         #   1.3. フリップが偶数でなければやり直す
-        for i in range((self.row + 1 + 1) // 2):
+        for i in range((self.row + 1) // 2):
             self.save(i)
             self.solve_row_pair(i)
-            self.update_flip(i)
+            self.update_flip()
 
             retry = 0
-            while not self.is_even_flip(i):
+            all_odd = all([not self.is_even_flip(j) for j in range((self.row + 1) // 2)])
+            if all_odd:
+                self.move("f0")
+                self.update_flip()
+            all_even = all([self.is_even_flip(j) for j in range((self.row + 1) // 2)])
+            while not self.is_even_flip(i) and self.column % 2 == 0 or not all_even and self.column % 2 == 1:
                 print("odd")
                 self.print()
-                print(self.flip_list[i])
+                print(self.flip_list)
 
                 self.load(i)
                 retry += 1
                 for _ in range(retry):
                     self.move(f"r{i}")
                 self.solve_row_pair(i)
-                self.update_flip(i)
+                self.update_flip()
+
+                all_odd = all([not self.is_even_flip(j) for j in range((self.row + 1) // 2)])
+                if all_odd:
+                    self.move("f0")
+                    self.update_flip()
+                all_even = all([self.is_even_flip(j) for j in range((self.row + 1) // 2)])
+            print(self.flip_list)
 
         # 2. 必要なら中央を解く　書き出し必要
         if self.row % 2 == 0:
@@ -185,19 +197,17 @@ class Globe(Puzzle):
 
         # 3. 上下のflipを直す
         #   3.1. 反対側まで移動してフリップする
-        # for i in range((self.row + 1 + 1) // 2):
-        #     self.solve_row_flip(i)
+        for i in range((self.row + 1 + 1) // 2):
+            self.solve_row_flip(i)
 
         # 4. 左右の順番入れ替える
-        with open(f'globe-{self.row}-{self.column}-af_rotate_rev.pkl', mode='rb') as f:
-            self.solve_dict_rev = pickle.load(f)
         for i in range((self.row + 1 + 1) // 2):
             self.fix_order(i)
 
     def solve_row_pair(self, i):
         before_state = self.state
         self.update_unsolved_pair(i)
-        self.update_flip(i)
+        self.update_flip()
 
         while len(self.unsolved_pair_list[i]) > 0:
             self.print()
@@ -209,14 +219,24 @@ class Globe(Puzzle):
                     continue
                 p1 = self.unsolved_pair_list[i][index1]
                 p2 = self.unsolved_pair_list[i][index2]
-                # 同じ側で距離が偶数
-                if self.is_pair(p1[0], p2[0]) and (p1[0] - p2[0]) % 2 == 0:
-                    self.create_pair_same_row(i, p1, p2)
-                    break
-                # 違う側で距離が奇数
-                if self.is_pair(p1[0], p2[1]) and (p1[0] - p2[0]) % 2 == 1:
-                    self.create_pair_opposite_row(i, p1, p2)
-                    break
+                if self.column % 2 == 0:
+                    # 同じ側で距離が偶数
+                    if self.is_pair(p1[0], p2[0]) and (p1[0] - p2[0]) % 2 == 0:
+                        self.create_pair_same_row(i, p1, p2)
+                        break
+                    # 違う側で距離が奇数
+                    if self.is_pair(p1[0], p2[1]) and (p1[0] - p2[0]) % 2 == 1:
+                        self.create_pair_opposite_row(i, p1, p2)
+                        break
+                else:
+                    # 同じ側で距離が奇数
+                    if self.is_pair(p1[0], p2[0]) and (p1[0] - p2[0]) % 2 == 1:
+                        self.create_pair_same_row_odd(i, p1, p2)
+                        break
+                    # 違う側で距離が奇数
+                    if self.is_pair(p1[0], p2[1]) and (p1[0] - p2[0]) % 2 == 1:
+                        self.create_pair_opposite_row_odd(i, p1, p2)
+                        break
             self.update_unsolved_pair(i)
             if before_state == self.state:
                 column_list = [pair[0] for pair in self.unsolved_pair_list[i]]
@@ -231,11 +251,11 @@ class Globe(Puzzle):
             self.update_unsolved_pair(i)
             before_state = self.state
 
-            time.sleep(0.2)
+            time.sleep(0.1)
 
     def solve_row_flip(self, i):
         before_state = self.state
-        self.update_flip(i)
+        self.update_flip()
 
         while len(self.flip_list[i]) > 0:
             self.print()
@@ -247,7 +267,7 @@ class Globe(Puzzle):
                 p2 = self.flip_list[i][index2]
 
                 if (p1[0] - p2[0]) % self.column == 0:
-                    move_key = f"swapd/{i}/{(p1[0] + 1) % (self.column * 2)}"
+                    move_key = f"swapd/{i}/{(p1[0] + 1) % (self.column)}"
                     print(move_key)
                     self.move(move_key)
                     break
@@ -261,13 +281,15 @@ class Globe(Puzzle):
                     p1 = self.flip_list[i][index1]
                     p2 = self.flip_list[i][index2]
 
-                    dis = abs((p1[0] - p2[0]) % self.column - self.column // 2)
+                    dis = min((p1[0] - p2[0]) % (self.column * 2), (p2[0] - p1[0]) % (self.column * 2))
                     if dis > nearest:
+                        nearest = dis
                         nearest_pair = (index1, index2)
 
                 p1 = self.flip_list[i][nearest_pair[0]]
                 p2 = self.flip_list[i][nearest_pair[1]]
-                if (p1[0] - p2[0]) % (self.column * 2) < self.column:
+                print(nearest, p1, p2, nearest_pair)
+                if (p1[0] - p2[0]) % (self.column * 2) < (p2[0] - p1[0]) % (self.column * 2):
                     move_key = f"swap/{i}/{(p1[0] + 1) % (self.column * 2)}"
                     print(move_key)
                     self.move(move_key)
@@ -277,26 +299,37 @@ class Globe(Puzzle):
                     self.move(move_key)
 
             before_state = self.state
-            self.update_flip(i)
+            self.update_flip()
 
-            time.sleep(0.3)
+            time.sleep(0.1)
 
     def fix_order(self, i):
+        move_list = []
+        for index in range(self.column * 2):
+            for k in range(min(self.column + 1, 4)):
+                if k == 0:
+                    move_list.append(f"swap/{i}/{index}")
+                else:
+                    move_list.append(f"swap/{i}/{index}/{k}")
         while self.calc_order_loss(i) > 0:
-            best_key = ""
-            best_loss = self.calc_order_loss(i) + self.calc_flip_cost(i)
+            best_key = None
+            best_loss = self.calc_order_loss(i)
             print(best_loss)
             self.save(f"order{i}")
-            for key in tqdm.tqdm(self.solve_dict_rev, total=len(self.solve_dict_rev)):
-                self.move(key)
-                loss = self.calc_order_loss(i) + self.calc_flip_cost(i)
-                if loss < best_loss:
-                    best_loss = loss
-                    best_key = key
-                self.load(f"order{i}")
+            for num in range(1, 3):
+                print(num)
+                for keys in itertools.product(move_list, repeat=num):
+                    for key in keys:
+                        self.move(key)
+                    loss = self.calc_order_loss(i)
+                    if loss < best_loss:
+                        best_loss = loss
+                        best_key = keys
+                    self.load(f"order{i}")
 
             print(best_key)
-            self.move(best_key)
+            for key in best_key:
+                self.move(key)
             self.print()
 
     def calc_order_loss(self, i):
@@ -310,44 +343,23 @@ class Globe(Puzzle):
                 loss += min((state_i - index1) % (self.column * 2), (index1 - state_i) % (self.column * 2)) ** 2
             else:
                 # 正しい位置はstate_iからstate_i+self.same_num
+                state_i = state_i // 2 * self.same_num
                 if state_i <= index1 < state_i + self.same_num:
                     continue
-                loss_list = [(state_i - index1) % (self.column * 2), (index1 - state_i) % (self.column * 2),
-                             ((state_i + self.same_num - 1) - index1) % (self.column * 2),
-                             (index1 - (state_i + self.same_num - 1)) % (self.column * 2)]
-                loss += min(loss_list)
+                loss_list = [abs(state_i - index1), abs(index1 - state_i),
+                             abs((state_i + self.same_num - 1) - index1),
+                             abs(index1 - (state_i + self.same_num - 1))]
+                if min(loss_list) > 0:
+                    loss += min(loss_list) + 1
 
         return loss
-
-    def calc_flip_cost(self, i):
-        cost = 0
-        for j in range(self.column * 2):
-            if self.encode(self.state[i * self.column * 2 + j]) > self.encode(
-                    self.state[(self.row - i) * self.column * 2 + j]):
-                cost += self.column
-        return cost
-
-    def create_pair_opposite_row(self, i, p1, p2):
-        print((p1[0], p2[1]))
-        diff = (p2[0] - p1[0]) % (self.column * 2)
-        if diff < self.column:
-            move_key = f"f{(p1[0] + (diff - 1) // 2 + 1) % (self.column * 2)}"
-            print(move_key)
-            self.move(move_key)
-        else:
-            move_key = f"f{(p1[0] + self.column - (self.column * 2 - diff - 1) // 2) % (self.column * 2)}"
-            print(move_key)
-            self.move(move_key)
-        move_key = f"get_pair/{i}/{(p1[0] + 1) % (self.column)}"
-        print(move_key)
-        self.move(move_key)
 
     def create_pair_same_row(self, i, p1, p2):
         print((p1[0], p2[0]))
         if p1[0] > p2[0]:
             if p1[0] - p2[0] > self.column:
-                s1 = p2[0]
-                s2 = p1[0]
+                s1 = p1[0]
+                s2 = p2[0]
             else:
                 s1 = p2[0]
                 s2 = p1[0]
@@ -368,6 +380,79 @@ class Globe(Puzzle):
                 move_key = f"f{(s1 + self.column // 2) % (self.column * 2)}.f{(s1 + self.column - diff // 2) % (self.column * 2)}"
                 print(move_key)
                 self.move(move_key)
+        move_key = f"get_pair/{i}/{(s1 + 1) % (self.column * 2)}"
+        print(move_key)
+        self.move(move_key)
+
+    def create_pair_opposite_row(self, i, p1, p2):
+        print((p1[0], p2[1]))
+        diff = (p2[0] - p1[0]) % (self.column * 2)
+        if diff < self.column:
+            move_key = f"f{(p1[0] + (diff - 1) // 2 + 1) % (self.column * 2)}"
+            print(move_key)
+            self.move(move_key)
+        else:
+            move_key = f"f{(p1[0] + self.column - (self.column * 2 - diff - 1) // 2) % (self.column * 2)}"
+            print(move_key)
+            self.move(move_key)
+        move_key = f"get_pair/{i}/{(p1[0] + 1) % (self.column)}"
+        print(move_key)
+        self.move(move_key)
+
+    def create_pair_same_row_odd(self, i, p1, p2):
+        print((p1[0], p2[0]))
+        if p1[0] > p2[0]:
+            if p1[0] - p2[0] > self.column:
+                s1 = p1[0]
+                s2 = p2[0] + self.column * 2
+            else:
+                s1 = p2[0]
+                s2 = p1[0]
+        else:
+            if p2[0] - p1[0] > self.column:
+                s1 = p2[0]
+                s2 = p1[0] + self.column * 2
+            else:
+                s1 = p1[0]
+                s2 = p2[0]
+        diff = (s2 - s1) % self.column
+        if diff != 1:
+            move_key = f"f{((s1 + self.column + s2) // 2 - self.column // 2 - 1) % (self.column * 2)}.f{(s1 + self.column - 1 - self.column // 2) % (self.column * 2)}"
+            print(move_key)
+            self.move(move_key)
+        else:
+            move_key = f"f{s2 % (self.column * 2)}.f{(s1 + self.column - 1 - self.column // 2) % (self.column * 2)}.f{(s1 + self.column - 2 - self.column // 2) % (self.column * 2)}.f{(s1 + self.column - 1 - self.column // 2) % (self.column * 2)}"
+            print(move_key)
+            self.move(move_key)
+        move_key = f"get_pair/{i}/{(s1 + 1) % (self.column * 2)}"
+        print(move_key)
+        self.move(move_key)
+
+    def create_pair_opposite_row_odd(self, i, p1, p2):
+        print((p1[0], p2[1]))
+        if p1[0] > p2[0]:
+            if p1[0] - p2[0] > self.column:
+                s1 = p1[0]
+                s2 = p2[0] + self.column * 2
+            else:
+                s1 = p2[0]
+                s2 = p1[0]
+        else:
+            if p2[0] - p1[0] > self.column:
+                s1 = p2[0]
+                s2 = p1[0] + self.column * 2
+            else:
+                s1 = p1[0]
+                s2 = p2[0]
+        diff = (s2 - s1) % self.column
+        if diff != 0:
+            move_key = f"f{((s1 + self.column + s2) // 2 - self.column // 2) % (self.column * 2)}"
+            print(move_key)
+            self.move(move_key)
+        else:
+            move_key = f"f{(s2 - self.column // 2 - 1) % (self.column * 2)}.f{(s2 - self.column // 2 - 2) % (self.column * 2)}.f{(s2 - self.column // 2 - 1) % (self.column * 2)}"
+            print(move_key)
+            self.move(move_key)
         move_key = f"get_pair/{i}/{(s1 + 1) % (self.column * 2)}"
         print(move_key)
         self.move(move_key)
@@ -394,6 +479,9 @@ class Globe(Puzzle):
                 sugar_dict[f"swapd/{i}/{j}"] = f"-r{i}.f{j}.r{i}.-r{self.row - i}.f{j}.r{self.row - i}"
             for j in range(self.column * 2):
                 sugar_dict[f"swap/{i}/{j}"] = f"f{j}.-r{i}.f{j}.r{i}.-r{self.row - i}.f{j}.r{self.row - i}.f{j}"
+                for k in range(1, self.column + 1):
+                    sugar_dict[
+                        f"swap/{i}/{j}/{k}"] = f"f{j}.{'.'.join([f'-r{i}' for _ in range(k)])}.f{j}.{'.'.join([f'r{i}' for _ in range(k)])}.{'.'.join([f'-r{self.row - i}' for _ in range(k)])}.f{j}.{'.'.join([f'r{self.row - i}' for _ in range(k)])}.f{j}"
                 sugar_dict[f"get_pair/{i}/{j}"] = f"-r{self.row - i}.f{j}.r{self.row - i}"
         for i in range((self.row + 1) // 2):
             sugar_dict[f"flip/{i}"] = f"-r{i}.f0.r{self.row - i}.f0.-r{self.row - i}"
@@ -414,8 +502,9 @@ class Globe(Puzzle):
             if not self.is_pair(upper_i, lower_i):
                 self.unsolved_pair_list[i].append((upper_i, lower_i))
 
-    def update_flip(self, i):
-        self.flip_list[i] = self.get_flip_list(i)
+    def update_flip(self):
+        for i in range((self.row + 1) // 2):
+            self.flip_list[i] = self.get_flip_list(i)
 
     def is_pair(self, i, j):
         cell_1 = self.encode(self.state[i])
@@ -501,7 +590,7 @@ def print_globe(i, j, state):
     for row in range(i + 1):
         temp = []
         for index in range(row * j * 2, (row + 1) * j * 2):
-            temp.append(f"{state[index]:3}")
+            temp.append(f"{state[index]:2}")
         print(';'.join(temp))
     print()
 

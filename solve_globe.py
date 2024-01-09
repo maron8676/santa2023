@@ -75,6 +75,8 @@ if __name__ == "__main__":
         puzzle_state = Wreath(int(left), int(right), initial_state, solution_state, allowed_moves, num_wildcards)
     if puzzle_type.startswith(globe_prefix):
         row, column = puzzle_type[len(globe_prefix):].split("/")
+        if row == "33" and column == "3":
+            row, column = column, row
         puzzle_state = Globe(int(row), int(column), initial_state, solution_state, allowed_moves, num_wildcards)
 
         puzzle_state.print()
