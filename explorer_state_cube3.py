@@ -31,10 +31,11 @@ for key in key_list:
 
 # initial_state = 'A;A;A;A;A;A;A;A;A;B;B;B;B;B;B;B;B;B;C;C;C;C;C;C;C;C;C;D;D;D;D;D;D;D;D;D;E;E;E;E;E;E;E;E;E;F;F;F;F;F;F;F;F;F'
 # initial_state = 'N0;N1;N2;N3;N4;N5;N6;N7;N8;N9;N10;N11;N12;N13;N14;N15;N16;N17;N18;N19;N20;N21;N22;N23;N24;N25;N26;N27;N28;N29;N30;N31;N32;N33;N34;N35;N36;N37;N38;N39;N40;N41;N42;N43;N44;N45;N46;N47;N48;N49;N50;N51;N52;N53'
-initial_state = 'A;B;A;B;A;B;A;B;A;B;C;B;C;B;C;B;C;B;C;D;C;D;C;D;C;D;C;D;E;D;E;D;E;D;E;D;E;F;E;F;E;F;E;F;E;F;A;F;A;F;A;F;A;F'
-solve_dict = {initial_state: []}
+# initial_state = 'A;B;A;B;A;B;A;B;A;B;C;B;C;B;C;B;C;B;C;D;C;D;C;D;C;D;C;D;E;D;E;D;E;D;E;D;E;F;E;F;E;F;E;F;E;F;A;F;A;F;A;F;A;F'
+initial_state = list(range(54))
+solve_dict = {';'.join(map(str, initial_state)): []}
 
-queue = deque([(initial_state.split(';'), [])])
+queue = deque([(initial_state, [])])
 
 before_time = time.time()
 while len(queue) > 0:
@@ -43,7 +44,7 @@ while len(queue) > 0:
         p = allowed_moves[m]
 
         new_state = p(state[0])
-        new_state_str = ';'.join(new_state)
+        new_state_str = ';'.join(map(str, new_state))
         if new_state_str not in solve_dict:
             operation = []
             operation.extend(state[1])
@@ -58,18 +59,18 @@ while len(queue) > 0:
         before_time = now
 
 print(len(solve_dict))
-initial_state_list = initial_state.split(';')
-dis_dict = defaultdict(list)
-for key in solve_dict:
-    state = key.split(';')
-    diff = sum([state[i] != initial_state_list[i] for i in range(54)])
-    if diff <= 6:
-        dis_dict[diff].append(key)
+# initial_state_list = initial_state.split(';')
+# dis_dict = defaultdict(list)
+# for key in solve_dict:
+#     state = key.split(';')
+#     diff = sum([state[i] != initial_state_list[i] for i in range(54)])
+#     if diff <= 6:
+#         dis_dict[diff].append(key)
+#
+# for i in range(0, 7, 2):
+#     print(i, len(dis_dict[i]))
 
-for i in range(0, 7, 2):
-    print(i, len(dis_dict[i]))
-
-# with open('cube-333-6-another.pkl', mode='wb') as f:
-#     pickle.dump(solve_dict, f)
-with open('cube-333-6-dis-another.pkl', mode='wb') as f:
-    pickle.dump(dis_dict, f)
+with open('cube-333-6.pkl', mode='wb') as f:
+    pickle.dump(solve_dict, f)
+# with open('cube-333-6-dis-another.pkl', mode='wb') as f:
+#     pickle.dump(dis_dict, f)

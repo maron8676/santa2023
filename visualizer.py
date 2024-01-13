@@ -3,7 +3,7 @@ from ast import literal_eval
 import pandas as pd
 from sympy.combinatorics import Permutation
 
-from puzzle import Wreath, Globe
+from puzzle import Wreath, Globe, Cube
 
 puzzle_info = pd.read_csv("puzzle_info.csv", index_col='puzzle_type')
 puzzles = pd.read_csv("puzzles.csv")
@@ -27,6 +27,9 @@ if __name__ == "__main__":
     for key in key_list:
         allowed_moves["-" + key] = allowed_moves[key] ** (-1)
 
+    if puzzle_type.startswith(cube_prefix):
+        f, r, d = puzzle_type[len(cube_prefix):].split("/")
+        puzzle_state = Cube()
     if puzzle_type.startswith(wreath_prefix):
         left, right = puzzle_type[len(wreath_prefix):].split("/")
         puzzle_state = Wreath(int(left), int(right), initial_state, solution_state, allowed_moves, num_wildcards)

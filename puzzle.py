@@ -109,6 +109,15 @@ class Puzzle:
         raise NotImplementedError
 
 
+class Cube(Puzzle):
+    def __init__(self, size, initial_state, solution_state, allowed_moves, num_wildcards):
+        super().__init__(initial_state, solution_state, allowed_moves, num_wildcards)
+        self.size = size
+
+    def __str__(self):
+        return f"cube_{self.size}/{self.size}/{self.size} {self.state}"
+
+
 class Wreath(Puzzle):
     def __init__(self, left, right, initial_state, solution_state, allowed_moves, num_wildcards):
         super().__init__(initial_state, solution_state, allowed_moves, num_wildcards)
@@ -137,7 +146,7 @@ class Wreath(Puzzle):
 
 
 class Globe(Puzzle):
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcd"
 
     def __init__(self, row, column, initial_state, solution_state, allowed_moves, num_wildcards):
         super().__init__(initial_state, solution_state, allowed_moves, num_wildcards)
@@ -193,7 +202,22 @@ class Globe(Puzzle):
 
         # 2. 必要なら中央を解く　書き出し必要
         if self.row % 2 == 0:
-            print("middle")
+            index = self.row // 2
+            first = self.solution_state[index * self.column * 2]
+            found = -1
+            for cell in range(index * self.column * 2, (index + 1) * self.column * 2):
+                if self.state[cell] == first and self.state[(cell - 1) % (self.column * 2)]:
+                    found = cell
+                    break
+
+            diff = found - index * self.column * 2
+            if diff <= self.column:
+                for _ in range(diff):
+                    self.move(f"r{index}")
+            else:
+                diff = (index + 1) * self.column * 2 - found
+                for _ in range(diff):
+                    self.move(f"-r{index}")
 
         # 3. 上下のflipを直す
         #   3.1. 反対側まで移動してフリップする
@@ -531,6 +555,10 @@ class Globe(Puzzle):
     def print(self):
         print(f"move_num: {len(self.move_list)}")
         print_globe(self.row, self.column, self.state)
+
+
+def print_cube(size, state):
+    pass
 
 
 def print_wreath(left, right, state):
