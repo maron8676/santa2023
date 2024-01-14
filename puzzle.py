@@ -206,10 +206,10 @@ class Globe(Puzzle):
             first = self.solution_state[index * self.column * 2]
             found = -1
             for cell in range(index * self.column * 2, (index + 1) * self.column * 2):
-                if self.state[cell] == first and self.state[(cell - 1) % (self.column * 2)]:
+                before = cell - 1 if cell > index * self.column * 2 else cell + self.column * 2 - 1
+                if self.state[cell] == first and self.state[before] != first:
                     found = cell
                     break
-
             diff = found - index * self.column * 2
             if diff <= self.column:
                 for _ in range(diff):
@@ -221,11 +221,11 @@ class Globe(Puzzle):
 
         # 3. 上下のflipを直す
         #   3.1. 反対側まで移動してフリップする
-        for i in range((self.row + 1 + 1) // 2):
+        for i in range((self.row + 1) // 2):
             self.solve_row_flip(i)
 
         # 4. 左右の順番入れ替える
-        for i in range((self.row + 1 + 1) // 2):
+        for i in range((self.row + 1) // 2):
             self.fix_order(i)
 
     def solve_row_pair(self, i):
@@ -330,18 +330,14 @@ class Globe(Puzzle):
     def fix_order(self, i):
         move_list = []
         for index in range(self.column * 2):
-            for k in range(min(self.column + 1, 4)):
-                if k == 0:
-                    move_list.append(f"swap/{i}/{index}")
-                else:
-                    move_list.append(f"swap/{i}/{index}/{k}")
+            for k in range(1, min(self.column + 1, 5)):
+                move_list.append(f"swap/{i}/{index}/{k}")
         while self.calc_order_loss(i) > 0:
             best_key = None
             best_loss = self.calc_order_loss(i)
             print(best_loss)
             self.save(f"order{i}")
             for num in range(1, 3):
-                print(num)
                 for keys in itertools.product(move_list, repeat=num):
                     for key in keys:
                         self.move(key)
@@ -349,6 +345,7 @@ class Globe(Puzzle):
                     if loss < best_loss:
                         best_loss = loss
                         best_key = keys
+                    # print(keys, loss)
                     self.load(f"order{i}")
 
             print(best_key)
@@ -360,14 +357,20 @@ class Globe(Puzzle):
         loss = 0
         for index in range(i * self.column * 2, (i + 1) * self.column * 2):
             state_i = self.encode(self.state[index])
-            index1 = index % (self.column * 2)
             # print(loss, state_i, index1)
             if self.has_each_color:
                 # 正しい位置はindex1
-                loss += min((state_i - index1) % (self.column * 2), (index1 - state_i) % (self.column * 2)) ** 2
+                index1 = index
+                diff = abs(state_i - index1)
+                if diff > 0:
+                    loss += abs(state_i - index1) ** 2
             else:
                 # 正しい位置はstate_iからstate_i+self.same_num
-                state_i = state_i // 2 * self.same_num
+                index1 = index % (self.column * 2)
+                if self.row % 2 == 1:
+                    state_i = state_i // 2 * self.same_num
+                else:
+                    state_i = state_i // 3 * self.same_num
                 if state_i <= index1 < state_i + self.same_num:
                     continue
                 loss_list = [abs(state_i - index1), abs(index1 - state_i),
@@ -396,7 +399,7 @@ class Globe(Puzzle):
                 s2 = p2[0]
         diff = (s2 - s1) % self.column
         if 0 < diff <= self.column // 2:
-            move_key = f"f{s2}.f{(s1 + (self.column + diff) // 2) % (self.column * 2)}"
+            move_key = f"f{s2 % (self.column * 2)}.f{(s1 + (self.column + diff) // 2) % (self.column * 2)}"
             print(move_key)
             self.move(move_key)
         else:
@@ -533,9 +536,12 @@ class Globe(Puzzle):
     def is_pair(self, i, j):
         cell_1 = self.encode(self.state[i])
         cell_2 = self.encode(self.state[j])
-        if self.has_each_color and abs(cell_1 - cell_2) != (self.row - i - i) * self.column * 2:
+        if self.has_each_color and abs(cell_1 - cell_2) != abs(
+                cell_1 // (self.column * 2) - cell_2 // (self.column * 2)) * self.column * 2:
             return False
-        elif not self.has_each_color and (cell_1 // 2 != cell_2 // 2 or cell_1 == cell_2):
+        elif not self.has_each_color and self.row % 2 == 1 and (cell_1 // 2 != cell_2 // 2 or cell_1 == cell_2):
+            return False
+        elif not self.has_each_color and self.row % 2 == 0 and (cell_1 // 3 != cell_2 // 3 or cell_1 == cell_2):
             return False
         return True
 
