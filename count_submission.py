@@ -10,7 +10,7 @@ def li():
 
 
 my_submission = pd.read_csv('submission.csv')
-submission_public = pd.read_csv("optimized_seans.csv", index_col='id')
+submission_public = pd.read_csv("submission_opt.csv", index_col='id')
 sample_submission = pd.read_csv("sample_submission.csv", index_col='id')
 print(my_submission.head())
 
