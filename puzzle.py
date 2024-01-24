@@ -117,6 +117,10 @@ class Cube(Puzzle):
     def __str__(self):
         return f"cube_{self.size}/{self.size}/{self.size} {self.state}"
 
+    def print(self):
+        print(f"move_num: {len(self.move_list)}")
+        print_cube(self.size, self.state)
+
 
 class Wreath(Puzzle):
     def __init__(self, left, right, initial_state, solution_state, allowed_moves, num_wildcards):
@@ -564,7 +568,13 @@ class Globe(Puzzle):
 
 
 def print_cube(size, state):
-    pass
+    cell_len = 2
+    for i in range(size):
+        padding = " " * (cell_len * size)
+        print(padding, *state[i * size:(i + 1) * size])
+    for i in range(size):
+        padding = " " * (cell_len * size)
+        print(padding, *state[i * size + size ** 2 * 5:(i + 1) * size + size ** 2 * 5])
 
 
 def print_wreath(left, right, state):

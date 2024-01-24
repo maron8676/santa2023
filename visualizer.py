@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     if puzzle_type.startswith(cube_prefix):
         f, r, d = puzzle_type[len(cube_prefix):].split("/")
-        puzzle_state = Cube()
+        puzzle_state = Cube(int(f), initial_state, solution_state, allowed_moves, num_wildcards)
     if puzzle_type.startswith(wreath_prefix):
         left, right = puzzle_type[len(wreath_prefix):].split("/")
         puzzle_state = Wreath(int(left), int(right), initial_state, solution_state, allowed_moves, num_wildcards)
