@@ -82,23 +82,12 @@ if __name__ == "__main__":
         for i in range(len(perm)):
             if perm[i] != comp[i]:
                 diff += 1
+        if diff == 15:
+            print(key, perm)
         hist[diff] += 1
 
     for i, value in enumerate(hist):
         print(i, value)
 
-    # perm_set = set()
-    # perm_dict2 = dict()
-    # same_dict = dict()
-    # for key in perm_dict:
-    #     perm = perm_dict[key]
-    #     perm_str = ';'.join(list(map(str, perm)))
-    #     if perm_str not in perm_set:
-    #         perm_set.add(perm_str)
-    #         perm_dict2[perm_str] = key
-    #     else:
-    #         now_key = perm_dict2[perm_str]
-    #         if key[0] <= now_key[0] and now_key[1] <= key[1]:
-    #             perm_dict2[perm_str] = key
-    #         same_dict[perm_str]
-    # print(len(perm_set))
+    rotate = allowed_moves['-r0'] * allowed_moves['-r1'] * allowed_moves['-r2'] * allowed_moves['-r3']
+    print(rotate)
