@@ -35,7 +35,16 @@ class Puzzle:
         return diff <= self.num_wildcards
 
     def move(self, move_key):
-        raise NotImplementedError
+        if self.parse_command(move_key):
+            return
+
+        move_key_input_list = move_key.split(".")
+        if any([move_key_input not in self.allowed_moves for move_key_input in move_key_input_list]):
+            print(f"not allowed: {move_key}")
+            return
+
+        # 移動処理
+        self.move_from_key_list(move_key_input_list)
 
     def parse_command(self, move_key):
         # 元に戻す
@@ -88,11 +97,14 @@ class Puzzle:
         self.history_queue = deque([(self.state, self.move_list)])
         self.history_index = 0
 
-    def move_from_key_list(self, move_key_input_list):
+    def move_from_key_list(self, move_key_input_list, verbose=False):
         # 履歴管理のため、意図的に新しいリストオブジェクトを作る
         self.move_list = self.move_list + move_key_input_list
         for move_key_input in move_key_input_list:
             self.state = self.allowed_moves[move_key_input](self.state)
+            if verbose:
+                self.print()
+                time.sleep(0.1)
 
         # 新しい側の履歴を削除してから追加
         while self.history_index + 1 < len(self.history_queue):
@@ -120,6 +132,18 @@ class Cube(Puzzle):
     def print(self):
         print(f"move_num: {len(self.move_list)}")
         print_cube(self.size, self.state)
+
+    def move(self, move_key):
+        if self.parse_command(move_key):
+            return
+
+        move_key_input_list = move_key.split(".")
+        if any([move_key_input not in self.allowed_moves for move_key_input in move_key_input_list]):
+            print(f"not allowed: {move_key}")
+            return
+
+        # 移動処理
+        self.move_from_key_list(move_key_input_list)
 
 
 class Wreath(Puzzle):
@@ -572,6 +596,12 @@ def print_cube(size, state):
     for i in range(size):
         padding = " " * (cell_len * size)
         print(padding, *state[i * size:(i + 1) * size])
+    for i in range(size):
+        row = []
+        for j in range(3, 7):
+            plane = j % 4 + 1
+            row.append(' '.join(state[i * size + size ** 2 * plane:(i + 1) * size + size ** 2 * plane]))
+        print('  '.join(row))
     for i in range(size):
         padding = " " * (cell_len * size)
         print(padding, *state[i * size + size ** 2 * 5:(i + 1) * size + size ** 2 * 5])
