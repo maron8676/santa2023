@@ -48,14 +48,19 @@ def generate_moves(charset, maxlength):
                                                      for i in range(1, maxlength + 1)))
 
 
-def reverse_moves(moves):
+def reverse_move_list(moves):
     res = moves[::-1]
     for i in range(len(res)):
         move = res[i]
-        if move[0] == "-":
-            res[i] = move[1:]
-        else:
-            res[i] = "-" + move
+        res[i] = reverse_move(res[i])
+    return res
+
+
+def reverse_move(move):
+    if move[0] == "-":
+        res = move[1:]
+    else:
+        res = "-" + move
     return res
 
 
@@ -95,7 +100,7 @@ for index, row in subset.iterrows():
                 initial_state_list[i] = temp1
     else:
         best_ans = wreath6712[''.join(initial_state_list)]
-    result = reverse_moves(best_ans)
+    result = reverse_move_list(best_ans)
     # print(initial_state, result)
     # result = brute_force(row.id, row, all_moves, allowed_moves)
     sample_submission.loc[row.id]['moves'] = '.'.join(result)
@@ -113,7 +118,7 @@ for index, row in subset.iterrows():
         continue
 
     result = cube222[row.initial_state]
-    result = reverse_moves(result)
+    result = reverse_move_list(result)
     sample_submission.loc[row.id]['moves'] = '.'.join(result)
 
 with open('cube-222b.pkl', mode='rb') as f:
@@ -125,7 +130,7 @@ for index, row in subset.iterrows():
         continue
 
     result = cube222[row.initial_state]
-    result = reverse_moves(result)
+    result = reverse_move_list(result)
     sample_submission.loc[row.id]['moves'] = '.'.join(result)
 
 with open('cube-222c.pkl', mode='rb') as f:
@@ -137,7 +142,7 @@ for index, row in subset.iterrows():
         continue
 
     result = cube222[row.initial_state]
-    result = reverse_moves(result)
+    result = reverse_move_list(result)
     sample_submission.loc[row.id]['moves'] = '.'.join(result)
 
 sample_submission.to_csv('submission.csv')

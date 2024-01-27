@@ -82,12 +82,9 @@ if __name__ == "__main__":
         for i in range(len(perm)):
             if perm[i] != comp[i]:
                 diff += 1
-        if diff == 15:
+        if diff == 20:
             print(key, perm)
         hist[diff] += 1
 
     for i, value in enumerate(hist):
         print(i, value)
-
-    rotate = allowed_moves['-r0'] * allowed_moves['-r1'] * allowed_moves['-r2'] * allowed_moves['-r3']
-    print(rotate)
