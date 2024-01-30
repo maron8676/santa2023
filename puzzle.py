@@ -253,9 +253,8 @@ class Globe(Puzzle):
             self.solve_row_flip(i)
 
         # 4. 左右の順番入れ替える
-        self.fix_order()
-        # for i in range((self.row + 1) // 2):
-        #     self.fix_order(i)
+        for i in range((self.row + 1) // 2):
+            self.fix_order(i)
 
     def solve_row_pair(self, i):
         before_state = self.state
@@ -366,26 +365,26 @@ class Globe(Puzzle):
 
             time.sleep(0.1)
 
-    def fix_order(self):
+    def fix_order(self, i):
         move_list = []
-        for key in self.sugar_dict:
-            if key.startswith("swap/"):
-                move_list.append(key)
-        while sum([self.calc_order_loss(i) for i in range((self.row + 1) // 2)]) > 0:
+        for index in range(self.column * 2):
+            for k in range(1, min(self.column + 1, 10)):
+                move_list.append(f"swap/{i}/{index}/{k}")
+        while self.calc_order_loss(i) > 0:
             best_key = None
-            best_loss = sum([self.calc_order_loss(i) for i in range((self.row + 1) // 2)])
+            best_loss = self.calc_order_loss(i)
             print(best_loss)
-            self.save(f"order")
+            self.save(f"order{i}")
             for num in range(1, 3):
                 for keys in itertools.product(move_list, repeat=num):
                     for key in keys:
                         self.move(key)
-                    loss = sum([self.calc_order_loss(i) for i in range((self.row + 1) // 2)])
+                    loss = self.calc_order_loss(i)
                     if loss < best_loss:
                         best_loss = loss
                         best_key = keys
                     # print(keys, loss)
-                    self.load(f"order")
+                    self.load(f"order{i}")
 
             print(best_key)
             for key in best_key:
@@ -545,26 +544,12 @@ class Globe(Puzzle):
                 sugar_dict[f"swapd/{i}/{j}"] = f"-r{i}.f{j}.r{i}.-r{self.row - i}.f{j}.r{self.row - i}"
             for j in range(self.column * 2):
                 sugar_dict[f"swap/{i}/{j}"] = f"f{j}.-r{i}.f{j}.r{i}.-r{self.row - i}.f{j}.r{self.row - i}.f{j}"
+                for k in range(1, self.column + 1):
+                    sugar_dict[
+                        f"swap/{i}/{j}/{k}"] = f"f{j}.{'.'.join([f'-r{i}' for _ in range(k)])}.f{j}.{'.'.join([f'r{i}' for _ in range(k)])}.{'.'.join([f'-r{self.row - i}' for _ in range(k)])}.f{j}.{'.'.join([f'r{self.row - i}' for _ in range(k)])}.f{j}"
                 sugar_dict[f"get_pair/{i}/{j}"] = f"-r{self.row - i}.f{j}.r{self.row - i}"
         for i in range((self.row + 1) // 2):
             sugar_dict[f"flip/{i}"] = f"-r{i}.f0.r{self.row - i}.f0.-r{self.row - i}"
-
-        for num in range(1, (self.row + 1) // 2 + 1):
-            for rows in itertools.product(list(range((self.row + 1) // 2)), repeat=num):
-                row_str = ','.join(list(map(str, rows)))
-                for j in range(self.column * 2):
-                    for k in range(1, self.column + 1):
-                        row_ope_list1 = []
-                        row_ope_list2 = []
-                        row_ope_list3 = []
-                        row_ope_list4 = []
-                        for i in rows:
-                            row_ope_list1.append('.'.join([f'-r{i}' for _ in range(k)]))
-                            row_ope_list2.append('.'.join([f'r{i}' for _ in range(k)]))
-                            row_ope_list3.append('.'.join([f'-r{self.row - i}' for _ in range(k)]))
-                            row_ope_list4.append('.'.join([f'r{self.row - i}' for _ in range(k)]))
-                        sugar_dict[
-                            f"swap/{row_str}/{j}/{k}"] = f"f{j}.{'.'.join(row_ope_list1)}.f{j}.{'.'.join(row_ope_list2)}.{'.'.join(row_ope_list3)}.f{j}.{'.'.join(row_ope_list4)}.f{j}"
 
         return sugar_dict
 
